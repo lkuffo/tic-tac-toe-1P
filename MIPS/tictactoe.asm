@@ -1,118 +1,283 @@
-.data
-Title: .asciiz "Welcome to Tic-Tac-Toe in Assembly!!!\n\n The positions are as follows:\n\n"
-Positions: .asciiz "0|2|4\n6|8|10\n12|14|16\n\n"
-Player1Text: .asciiz "Please Enter a Position to put a X!!!\n\n"
-Player2Text: .asciiz "Please Enter a Position to put a O!!!\n\n"
-Board: .asciiz " | | \n | | \n | | \n"
-InputNumber: .byte 1
-
-.globl main
-.text
+			.text
+			.globl main
 main:
+			li $t1, 0
+			li $t2, 0
+			li $t3, 0
+			li $t4, 0
+			li $t5, 0
+			li $t6, 0
+			li $t7, 0
+			li $t8, 0
+			li $t9, 0
 
-	li $t0, 1 # Current player- Inital player is 1
+			li $s0, 0
+			li $s5, 0
 
-	li $t1, 9 # Number of turns remaining
+			la $s1, board
+			la $s2, askMove
+			la $s3, won
 
-	li $t2, 9 # Board Test Inrementer
+			lb $a1, clean
+			sb $a1, 14($s1)
+			sb $a1, 18($s1)
+			sb $a1, 22($s1)
+			sb $a1, 40($s1)
+			sb $a1, 44($s1)
+			sb $a1, 48($s1)
+			sb $a1, 66($s1)
+			sb $a1, 70($s1)
+			sb $a1, 74($s1)
 
-	la $t3, Board #charecter adddress
+PrintBoard:
+			li $v0, 4
+			la $a0, board
+			syscall
 
-	li $v0, 4 # li = load immediate for syscall 4 – print string
+			beq $s5, 9, Tie
 
-	la $a0, Title # la = load address
+			add $s5, $s5, 1
 
-	syscall
+			rem $t0, $s0, 2
+			add $s0, $s0, 1
+			bnez $t0, Player0
 
-	li $v0, 4 # li = load immediate for syscall 4 – print string
-
-	la $a0, Positions # la = load address
-
-	syscall
+PlayerX:
+			lb $a1, x
+			sb $a1, 7($s2)
+			sb $a1, 8($s3)
+			j Play
+Player0:
+			lb $a1, o
+			sb $a1, 7($s2)
+			sb $a1, 8($s3)
 
 Play:
+			li $v0, 4
+			la $a0, askMove
+			syscall
 
-	beq $t1, 0, Exit
+			li $v0, 5
+			syscall
+			move $s6, $v0
 
-	beq $t0, 1, Player1
+			beq $s6, 11, J11
+			beq $s6, 21, J21
+			beq $s6, 31, J31
+			beq $s6, 12, J12
+			beq $s6, 22, J22
+			beq $s6, 32, J32
+			beq $s6, 13, J13
+			beq $s6, 23, J23
+			beq $s6, 33, J33
 
-	j Player2
+			li $v0, 4
+			la $a0, invalidMove
+			syscall
+			j Play
 
-Player1:
+J11:
+			bnez $t1, Occupied
+			bnez $t0, O11
 
-	li $v0, 4
+			X11:
+			li $t1, 1
+			sb $a1, 14($s1)
+			j CheckVictory
 
-	la $a0, Player1Text
+			O11:
+			li $t1, 2
+			sb $a1, 14($s1)
+			j CheckVictory
 
-	syscall
+J21:
+			bnez $t2, Occupied
+			bnez $t0, O21
 
-	li $v0, 5 # Read Integer
+			X21:
+			li $t2, 1
+			sb $a1, 18($s1)
+			j CheckVictory
 
-	syscall
+			O21:
+			li $t2, 2
+			sb $a1, 18($s1)
+			j CheckVictory
 
-	move $s0, $v0 # Put input into $s0
+J31:
+			bnez $t3, Occupied
+			bnez $t0, O31
 
-	add $t3, $t3, $s0
+			X31:
+			li $t3, 1
+			sb $a1, 22($s1)
+			j CheckVictory
 
-	lb $t4, 0($t3)
+			O31:
+			li $t3, 2
+			sb $a1, 22($s1)
+			j CheckVictory
 
-	addi $t4, $t4, 56
+J12:
+			bnez $t4, Occupied
+			bnez $t0, O12
 
-	sb $t4, 0($t3)
+			X12:
+			li $t4, 1
+			sb $a1, 40($s1)
+			j CheckVictory
 
-	addi $t1, $t1, -1
+			O12:
+			li $t4, 2
+			sb $a1, 40($s1)
+			j CheckVictory
 
-	li $t0, 2
+J22:
+			bnez $t5, Occupied
+			bnez $t0, O22
 
-	j OutputBoard
+			X22:
+			li $t5, 1
+			sb $a1, 44($s1)
+			j CheckVictory
 
-Player2:
+			O22:
+			li $t5, 2
+			sb $a1, 44($s1)
+			j CheckVictory
 
-	li $v0, 4
+J32:
+			bnez $t6, Occupied
+			bnez $t0, O32
 
-	la $a0, Player2Text
+			X32:
+			li $t6, 1
+			sb $a1, 48($s1)
+			j CheckVictory
 
-	syscall
+			O32:
+			li $t6, 2
+			sb $a1, 48($s1)
+			j CheckVictory
 
-	li $v0, 5 # Read Integer
+J13:
+			bnez $t7, Occupied
+			bnez $t0, O13
 
-	syscall
+			X13:
+			li $t7, 1
+			sb $a1, 66($s1)
+			j CheckVictory
 
-	move $s0, $v0 # Put input into $s0
+			O13:
+			li $t7, 2
+			sb $a1, 66($s1)
+			j CheckVictory
 
-	add $t3, $t3, $s0
+J23:
+			bnez $t8, Occupied
+			bnez $t0, O23
 
-	lb $t4, 0($t3)
+			X23:
+			li $t8, 1
+			sb $a1, 70($s1)
+			j CheckVictory
 
-	addi $t4, $t4, 47
+			O23:
+			li $t8, 2
+			sb $a1, 70($s1)
+			j CheckVictory
 
-	sb $t4, 0($t3)
+J33:
+			bnez $t9, Occupied
+			bnez $t0, O33
 
-	addi $t1, $t1, -1
+			X33:
+			li $t9, 1
+			sb $a1, 74($s1)
+			j CheckVictory
 
-	li $t0, 1
+			O33:
+			li $t9, 2
+			sb $a1, 74($s1)
+			j CheckVictory
 
-	j OutputBoard
+Occupied:
+			li $v0, 4
+			la $a0, occupiedSpace
+			syscall
+			j Play
 
-OutputBoard:
+CheckVictory:
+			and $s7, $t1, $t2
+			and $s7, $s7, $t3
+			bnez $s7, Victory
 
-	li $v0, 4
+			and $s7, $t4, $t5
+			and $s7, $s7, $t6
+			bnez $s7, Victory
 
-	la $a0, Positions
+			and $s7, $t7, $t8
+			and $s7, $s7, $t9
+			bnez $s7, Victory
 
-	syscall
+			and $s7, $t1, $t4
+			and $s7, $s7, $t7
+			bnez $s7, Victory
 
-	la $a0, Board
+			and $s7, $t2, $t5
+			and $s7, $s7, $t8
+			bnez $s7, Victory
 
-	syscall
+			and $s7, $t3, $t6
+			and $s7, $s7, $t9
+			bnez $s7, Victory
 
-	li $s0, 0
+			and $s7, $t1, $t5
+			and $s7, $s7, $t9
+			bnez $s7, Victory
 
-	la $t3, Board
+			and $s7, $t7, $t5
+			and $s7, $s7, $t3
+			bnez $s7, Victory
+			j PrintBoard
 
-	j Play
+Victory:
+			li $v0, 4
+			la $a0, board
+			syscall
 
-Exit:
+			li $v0, 4
+			la $a0, won
+			syscall
+			j MenuNewGame
 
-	li $v0, 10
-	syscall
+Tie:
+			li $v0, 4
+			la $a0, tie
+			syscall
+
+MenuNewGame:
+			li $v0,4
+			la $a0, gameMenu
+			syscall
+
+			li $v0,5
+			syscall
+			bne $v0, 99, main
+
+			li $v0, 10
+			syscall
+
+
+			.data
+			board: .asciiz "  1   2   3\n1   |   |   \n ---+---+---\n2   |   |   \n ---+---+---\n3   |   |   \n"
+			askMove: .asciiz "Player   insert your play (column|line):"
+			invalidMove: .asciiz "**Invalid Move**"
+			occupiedSpace: .asciiz "**Space already occupied**\n"
+			x: .asciiz "X"
+			o: .asciiz "O"
+			won: .asciiz "\nPlayer   Won! \n"
+			tie: .asciiz  "\nTie!!!"
+			gameMenu: .asciiz "\n\nChoose an option:\n[1] New Game\t[99] Quit\nOption: "
+			clean: .byte ' '
