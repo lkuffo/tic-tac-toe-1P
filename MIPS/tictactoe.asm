@@ -6,7 +6,7 @@ movimientoInvalidoTexto: .asciiz "Posicion no valida, vuelva a ingresar\n"
 espacioYaOcupado: .asciiz "Posicion ya tomada, vuelva a ingresar: "
 victoriaTexto: .asciiz "\nGANADOR ES:  "
 empateTexto: .asciiz  "\nEMPATE!!!"
-inputMovimiento: .asciiz "Jugador   es tu turno: "
+inputMovimiento: .asciiz "Jugador   es tu turno. Ingresa la posicion en el tablero, del 1 al 9: "
 finalTexto: .asciiz "\nGracias por Jugar"
 
 # FORMATO DE TABLERO
