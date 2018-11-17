@@ -1,283 +1,304 @@
-			.text
-			.globl main
-main:
-			li $t1, 0
-			li $t2, 0
-			li $t3, 0
-			li $t4, 0
-			li $t5, 0
-			li $t6, 0
-			li $t7, 0
-			li $t8, 0
-			li $t9, 0
+.data  # delcaraciones de variables
 
-			li $s0, 0
-			li $s5, 0
+# TEXTOS: 
+bienvenidoTexto: .asciiz "Bienvenido a TIC-TAC-TOE!\n"
+movimientoInvalidoTexto: .asciiz "Posicion no valida, vuelva a ingresar\n"
+espacioYaOcupado: .asciiz "Posicion ya tomada, vuelva a ingresar: "
+victoriaTexto: .asciiz "\nGANADOR ES:  "
+empateTexto: .asciiz  "\nEMPATE!!!"
+inputMovimiento: .asciiz "Jugador   es tu turno: "
+finalTexto: .asciiz "\nGracias por Jugar"
 
-			la $s1, board
-			la $s2, askMove
-			la $s3, won
+# FORMATO DE TABLERO
+tablero: .asciiz "\n    |   |   \n ---|---|---\n    |   |   \n ---|---|---\n    |   |   \n"
 
-			lb $a1, clean
-			sb $a1, 14($s1)
-			sb $a1, 18($s1)
-			sb $a1, 22($s1)
-			sb $a1, 40($s1)
-			sb $a1, 44($s1)
-			sb $a1, 48($s1)
-			sb $a1, 66($s1)
-			sb $a1, 70($s1)
-			sb $a1, 74($s1)
+# SIMBOLOS PARA CADA JUGADOR
+simboloX: .asciiz "X"
+simboloO: .asciiz "O"
 
-PrintBoard:
-			li $v0, 4
-			la $a0, board
+
+.text   #empiezan las instrucciones
+
+#TEXTO DE BIENVENIDA
+li $v0, 4  # Vamos a imprimir strings
+la $a0, bienvenidoTexto  # Cargamos el string a imprimir (texto de bienvenida)
+syscall # mostramos por pantalla
+
+#INICIALIZACION DE REGISTROS
+
+la $s1, tablero # string del tablero
+la $s2, inputMovimiento # string para pedir movimiento
+la $s3, victoriaTexto # string de victoria
+			
+li $s0, 0  # Jugador que le toca ( 0 o 1 )
+li $s5, 0  # Numero de turnos 
+			
+# Los registros tipo t van a tener el tablero logico, uno por casilla
+li $t1, 0
+li $t2, 0
+li $t3, 0
+li $t4, 0
+li $t5, 0
+li $t6, 0
+li $t7, 0
+li $t8, 0
+li $t9, 0			
+
+loopJuego:
+			li $v0, 4 	# vamos a imprimir caracteres
+			la $a0, tablero   # imprimimos el tablero
 			syscall
 
-			beq $s5, 9, Tie
+			beq $s5, 9, empate  # Si llega a 9 turnos, saltamos a empate
 
-			add $s5, $s5, 1
+			add $s5, $s5, 1 # Anadir un turno al juego
 
-			rem $t0, $s0, 2
-			add $s0, $s0, 1
-			bnez $t0, Player0
+			rem $t0, $s0, 2 # Para cambiar jugador: sacamos el modulo 2 del jugador actual 
+			add $s0, $s0, 1 # Y luego a ese valor le sumamos 1
+			bnez $t0, Jugador0 # Si el jugador no es 0 (player X), entonces jugamos con 1 (player 0), es decir
+					  # saltamos a Jugador0 sin pasar por JugadorX
 
-PlayerX:
-			lb $a1, x
-			sb $a1, 7($s2)
-			sb $a1, 8($s3)
-			j Play
-Player0:
-			lb $a1, o
-			sb $a1, 7($s2)
-			sb $a1, 8($s3)
+JugadorX:
+			lb $a1, simboloX  # Cargamos la cadena x en a1
+			sb $a1, 8($s2)  # Ponemos la X en la cadena para pedir movimiento
+			sb $a1, 12($s3)  # Ponemos la X en la cadena de victoria 
+			j turno # Saltamos a turno sin pasar por jugador 0
+			
+Jugador0:
+			lb $a1, simboloO # Cargamos la cadena o en a1
+			sb $a1, 8($s2) # Ponemos la O en la cadena para pedir movimiento
+			sb $a1, 12($s3) # Ponemos la O en la cadena de victoria 
 
-Play:
-			li $v0, 4
-			la $a0, askMove
+turno:
+			li $v0, 4  # Vamos a imprimir un string
+			la $a0, inputMovimiento  # Imprimimos la cadena para pedir movimiento
 			syscall
 
-			li $v0, 5
+			# Le pedimos el movimiento al usuario
+			li $v0, 5 # Vamos a pedir un entero (read_int)
 			syscall
-			move $s6, $v0
+			move $s6, $v0  # Movemos lo que ingreso el usuario a $s6
 
-			beq $s6, 11, J11
-			beq $s6, 21, J21
-			beq $s6, 31, J31
-			beq $s6, 12, J12
-			beq $s6, 22, J22
-			beq $s6, 32, J32
-			beq $s6, 13, J13
-			beq $s6, 23, J23
-			beq $s6, 33, J33
-
-			li $v0, 4
-			la $a0, invalidMove
+			# Saltamos a el caso, dependiendo de que ingreso el usuario
+			beq $s6, 1, casilla1
+			beq $s6, 2, casilla2
+			beq $s6, 3, casilla3
+			beq $s6, 4, casilla4
+			beq $s6, 5, casilla5
+			beq $s6, 6, casilla6
+			beq $s6, 7, casilla7
+			beq $s6, 8, casilla8
+			beq $s6, 9, casilla9
+			
+			# Si no entro a ninguna rama: 
+			li $v0, 4	# Vamos a imprimir string
+			la $a0, movimientoInvalidoTexto # Le decimos que ha ingresado un movimiento invalido
 			syscall
-			j Play
+			j turno # Volvemos a repetir el loop del juego 
 
-J11:
-			bnez $t1, Occupied
-			bnez $t0, O11
+# Por cada casilla en la que puede ingresar el jugador, se hace un caso, en donde
+# se va a verificar si la casilla esta ocupado, y luego se verifica cual jugador fue el que hizo la jugada.
+# Finalmente, se carga la jugada en el tablero logico, se coloca el simbolo correspondiente en el string para el tablero
+# y verificamosGanador
 
-			X11:
-			li $t1, 1
-			sb $a1, 14($s1)
-			j CheckVictory
+casilla1:
+			bnez $t1, ocupado # Si esa posicion del tablero no es cero, ya esta ocupada. Saltamos a ocupado
+			bnez $t0, O1 # Si el jugador es player 0 (player X), saltamos a O1, sin pasar por X1
 
-			O11:
-			li $t1, 2
-			sb $a1, 14($s1)
-			j CheckVictory
+			X1:
+			li $t1, 1 # Caragamos t1 con un id de jugador en el tablero logico 
+			sb $a1, 3($s1)  # Colocar simbolo en posicion 3 de string para imprimir el tablero 
+			j verificarGanador  # Saltamos a verificarGanador
 
-J21:
-			bnez $t2, Occupied
-			bnez $t0, O21
+			O1:
+			li $t1, 2 # Caragamos t1 con un id de jugador en el tablero logico 
+			sb $a1, 3($s1)  # Colocar simbolo en posicion 3 de string para imprimir el tablero 
+			j verificarGanador # Saltamos a verificarGanador
 
-			X21:
+casilla2:
+			bnez $t2, ocupado
+			bnez $t0, O2
+
+			X2:
 			li $t2, 1
-			sb $a1, 18($s1)
-			j CheckVictory
+			sb $a1, 7($s1)  # Colocar simbolo en posicion 7 de string para imprimir el tablero 
+			j verificarGanador
 
-			O21:
+			O2:
 			li $t2, 2
-			sb $a1, 18($s1)
-			j CheckVictory
+			sb $a1, 7($s1)  # Colocar simbolo en posicion 7 de string para imprimir el tablero 
+			j verificarGanador
 
-J31:
-			bnez $t3, Occupied
-			bnez $t0, O31
+casilla3:
+			bnez $t3, ocupado
+			bnez $t0, O3
 
-			X31:
+			X3:
 			li $t3, 1
-			sb $a1, 22($s1)
-			j CheckVictory
+			sb $a1, 11($s1)  # Colocar simbolo en posicion 11 de string para imprimir el tablero 
+			j verificarGanador
 
-			O31:
+			O3:
 			li $t3, 2
-			sb $a1, 22($s1)
-			j CheckVictory
+			sb $a1, 11($s1)  # Colocar simbolo en posicion 11 de string para imprimir el tablero 
+			j verificarGanador
 
-J12:
-			bnez $t4, Occupied
-			bnez $t0, O12
+casilla4:
+			bnez $t4, ocupado
+			bnez $t0, O4
 
-			X12:
+			X4:
 			li $t4, 1
-			sb $a1, 40($s1)
-			j CheckVictory
+			sb $a1, 29($s1)  # Colocar simbolo en posicion 29 de string para imprimir el tablero 
+			j verificarGanador
 
-			O12:
+			O4:
 			li $t4, 2
-			sb $a1, 40($s1)
-			j CheckVictory
+			sb $a1, 29($s1)  # Colocar simbolo en posicion 29 de string para imprimir el tablero 
+			j verificarGanador
 
-J22:
-			bnez $t5, Occupied
-			bnez $t0, O22
+casilla5:
+			bnez $t5, ocupado
+			bnez $t0, O5
 
-			X22:
+			X5:
 			li $t5, 1
-			sb $a1, 44($s1)
-			j CheckVictory
+			sb $a1, 33($s1) # Colocar simbolo en posicion 33 de string para imprimir el tablero 
+			j verificarGanador
 
-			O22:
+			O5:
 			li $t5, 2
-			sb $a1, 44($s1)
-			j CheckVictory
+			sb $a1, 33($s1) # Colocar simbolo en posicion 33 de string para imprimir el tablero 
+			j verificarGanador
 
-J32:
-			bnez $t6, Occupied
-			bnez $t0, O32
+casilla6:
+			bnez $t6, ocupado
+			bnez $t0, O6
 
-			X32:
+			X6:
 			li $t6, 1
-			sb $a1, 48($s1)
-			j CheckVictory
+			sb $a1, 37($s1) # Colocar simbolo en posicion 37 de string para imprimir el tablero 
+			j verificarGanador
 
-			O32:
+			O6:
 			li $t6, 2
-			sb $a1, 48($s1)
-			j CheckVictory
+			sb $a1, 37($s1) # Colocar simbolo en posicion 37 de string para imprimir el tablero 
+			j verificarGanador
 
-J13:
-			bnez $t7, Occupied
-			bnez $t0, O13
+casilla7:
+			bnez $t7, ocupado
+			bnez $t0, O7
 
-			X13:
+			X7:
 			li $t7, 1
-			sb $a1, 66($s1)
-			j CheckVictory
+			sb $a1, 55($s1) # Colocar simbolo en posicion 55 de string para imprimir el tablero 
+			j verificarGanador
 
-			O13:
+			O7:
 			li $t7, 2
-			sb $a1, 66($s1)
-			j CheckVictory
+			sb $a1, 55($s1) # Colocar simbolo en posicion 55 de string para imprimir el tablero 
+			j verificarGanador
 
-J23:
-			bnez $t8, Occupied
-			bnez $t0, O23
+casilla8:
+			bnez $t8, ocupado
+			bnez $t0, O8
 
-			X23:
+			X8:
 			li $t8, 1
-			sb $a1, 70($s1)
-			j CheckVictory
+			sb $a1, 59($s1) # Colocar simbolo en posicion 59 de string para imprimir el tablero 
+			j verificarGanador
 
-			O23:
+			O8:
 			li $t8, 2
-			sb $a1, 70($s1)
-			j CheckVictory
+			sb $a1, 59($s1) # Colocar simbolo en posicion 59 de string para imprimir el tablero 
+			j verificarGanador
 
-J33:
-			bnez $t9, Occupied
-			bnez $t0, O33
+casilla9:
+			bnez $t9, ocupado
+			bnez $t0, O9
 
-			X33:
+			X9:
 			li $t9, 1
-			sb $a1, 74($s1)
-			j CheckVictory
+			sb $a1, 63($s1) # Colocar simbolo en posicion 63 de string para imprimir el tablero 
+			j verificarGanador
 
-			O33:
+			O9:
 			li $t9, 2
-			sb $a1, 74($s1)
-			j CheckVictory
+			sb $a1, 63($s1) # Colocar simbolo en posicion 63 de string para imprimir el tablero 
+			j verificarGanador
 
-Occupied:
-			li $v0, 4
-			la $a0, occupiedSpace
+ocupado:
+			li $v0, 4  # Vamos a imprimir strings
+			la $a0, espacioYaOcupado  # Cargamos el string a imprimir y lo mostramos
 			syscall
-			j Play
+			j turno # Se vuelve a repetir el turno del jugador
 
-CheckVictory:
-			and $s7, $t1, $t2
+# Para verificar si existe (parecido a como se hizo en C), se hace una condicion doble con cada caso en la cual
+# un jugador puede ganar el tic tac toe. Se hace una operacion bit wise and, porque dado que en el tablero logico
+# solo estan guardados 10 (2 | player O), 01 (1 | player X) y 00 (0 | Vacio), al haber un vacio, o un O y X en la misma
+# combinacion de casillas, el bit-wise and da 0. Por lo tanto, no se va a saltar a mostrarGanador (bnez)
+verificarGanador:
+			# Fila Superior
+			and $s7, $t1, $t2 
 			and $s7, $s7, $t3
-			bnez $s7, Victory
+			bnez $s7, mostrarGanador
 
+			# File Media
 			and $s7, $t4, $t5
 			and $s7, $s7, $t6
-			bnez $s7, Victory
+			bnez $s7, mostrarGanador
 
+			# Fila Inferior
 			and $s7, $t7, $t8
 			and $s7, $s7, $t9
-			bnez $s7, Victory
+			bnez $s7, mostrarGanador
 
+			# Columna Primera
 			and $s7, $t1, $t4
 			and $s7, $s7, $t7
-			bnez $s7, Victory
+			bnez $s7, mostrarGanador
 
+			# Columna Media
 			and $s7, $t2, $t5
 			and $s7, $s7, $t8
-			bnez $s7, Victory
+			bnez $s7, mostrarGanador
 
+			# Columna Final
 			and $s7, $t3, $t6
 			and $s7, $s7, $t9
-			bnez $s7, Victory
+			bnez $s7, mostrarGanador
 
+			# Diagonal Principal
 			and $s7, $t1, $t5
 			and $s7, $s7, $t9
-			bnez $s7, Victory
+			bnez $s7, mostrarGanador
 
+			# Diagonal Secundaria
 			and $s7, $t7, $t5
 			and $s7, $s7, $t3
-			bnez $s7, Victory
-			j PrintBoard
+			bnez $s7, mostrarGanador
+			
+			j loopJuego  # Si no hay ganador (nunca hubo branching), volvemos a repetir el juego
 
-Victory:
-			li $v0, 4
-			la $a0, board
+mostrarGanador:
+			li $v0, 4 # Vamos a imprimir strings
+			la $a0, tablero  # Cargamos el string a imprimir y lo mostramos
 			syscall
 
-			li $v0, 4
-			la $a0, won
+			li $v0, 4 # Vamos a imprimir strings
+			la $a0, victoriaTexto  # Cargamos el string a imprimir y lo mostramos
 			syscall
-			j MenuNewGame
+			
+			j finalJuego # Si hay un ganador, saltamos al final del juego
 
-Tie:
-			li $v0, 4
-			la $a0, tie
+empate:
+			li $v0, 4  # Vamos a imprimir strings
+			la $a0, empateTexto  # Cargamos el string a imprimir y lo mostramos
 			syscall
+			
+			j finalJuego  # Si hay empate, saltamos al final del juego
 
-MenuNewGame:
-			li $v0,4
-			la $a0, gameMenu
+finalJuego:
+			li $v0, 4  # Vamos a imprimir strings
+			la $a0, finalTexto # Cargamos el string a imprimir y lo mostramos
 			syscall
-
-			li $v0,5
-			syscall
-			bne $v0, 99, main
-
-			li $v0, 10
-			syscall
-
-
-			.data
-			board: .asciiz "  1   2   3\n1   |   |   \n ---+---+---\n2   |   |   \n ---+---+---\n3   |   |   \n"
-			askMove: .asciiz "Player   insert your play (column|line):"
-			invalidMove: .asciiz "**Invalid Move**"
-			occupiedSpace: .asciiz "**Space already occupied**\n"
-			x: .asciiz "X"
-			o: .asciiz "O"
-			won: .asciiz "\nPlayer   Won! \n"
-			tie: .asciiz  "\nTie!!!"
-			gameMenu: .asciiz "\n\nChoose an option:\n[1] New Game\t[99] Quit\nOption: "
-			clean: .byte ' '
