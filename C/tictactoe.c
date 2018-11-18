@@ -1,14 +1,20 @@
+//Librerias
 #include <stdio.h>
 #include <stdlib.h>
 
 void imprimirTablero(char code[], int tablero[]);
+//Imprime tablero segun enteros en "tablero" y sus correspondientes caracteres en "code"
+
 int jugar(int tablero[], int posicion, int jugador); 
-// Verify if there is a winner: 
+//Verifica si se puede colocar un entero "jugador" en una "posicion" del arreglo "tablero"
+
+int verificarGanador(int tablero[], int turno);
+// Posibles salidas para función: 
 // -1: Sigue Jugando
 //  0: Empate
 //  1: Gana Jugador 1
 //  2: Gana Jugador 2
-int verificarGanador(int tablero[], int turno);
+
 int verificarGanador(int t[], int turno)
 {
 	if (t[0] == t[1] && t[0] == t[2] && t[0] != 0){
@@ -63,32 +69,36 @@ int jugar(int t[], int pos, int jugador){
 	}
 }
 
+//Programa principal
 int main ()
 {
-	char cod[3] = {'-', 'X', 'O'};
+	char cod[3] = {'-', 'X', 'O'}; //Caracteres para el juego
     	int jugador = 1, turno = 0, resultado = -1;
-    	int tablero[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+		//jugador: identificador de jugador en turno
+		//turno: contador
+		//resultado: estado actual del juego
+    	int tablero[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0}; //Arreglo unidimensional
 	printf("Bienvenido a TIC-TAC-TOE\n");
-	while (verificarGanador(tablero, turno) == -1)
+	while (verificarGanador(tablero, turno) == -1) //modifica "resultado" según funcion "verificarGanador"
 	{
-		int jugada;
+		int jugada; //variable para recibir entrada de jugador
 		printf("Jugador %d es tu turno: \n", jugador);
-		imprimirTablero(cod, tablero);
+		imprimirTablero(cod, tablero); //Mostrar en consola
 		printf("Ingresa la posicion en el tablero, del 1 al 9: ");
 		scanf("%d", &jugada);
-		while (jugar(tablero, jugada, jugador) == -1){
+		while (jugar(tablero, jugada, jugador) == -1){ //Pedir valor nuevamente hasta que se ingrese uno valido
 			scanf("%d", &jugada);
 		}
 		turno += 1;
-		if (jugador == 1){
+		if (jugador == 1){ //Cambiar al jugador siguiente
 			jugador = 2;
 		} else {
 			jugador = 1;	
 		}
 	}
 
-	resultado = verificarGanador(tablero, turno);
-	if (resultado == 0){
+	resultado = verificarGanador(tablero, turno); //Valor para resultado final
+	if (resultado == 0){ //Mostrar resultado del juego segun "resultado"
 		printf("\nEMPATE!!!\n");
 	} else {
 		printf("\nGANADOR ES: %d (%c)\n", resultado, cod[resultado]);
